@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Press+Start+2P&display=swap');
+
+:root {
+  --chiliz-red: #CD0124;
+  --dark-bg: #0f0f13;
+  --card-bg: #1a1a20;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --accent-glow: rgba(205, 1, 36, 0.4);
+}
+
+body {
+  margin: 0;
+  background-color: var(--dark-bg);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  /* Clean, professional font */
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: radial-gradient(circle at top, #1e1e24 0%, var(--dark-bg) 60%);
+}
+
+/* --- PLAYING MODE --- */
+.playing-mode {
+  background: #000;
+  /* Absolute black for gameplay focus */
+}
+
+.playing-mode .header-bar,
+.playing-mode .title-section,
+.playing-mode .menu-grid,
+.playing-mode .prize-dashboard {
+  /* Hide UI elements clearly when playing if they are overlaying, 
+     but here we usually swap the view. If they persist, dim them. */
+}
+
+/* --- TOP HEADER --- */
+.header-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 24px 40px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 50;
+}
+
+.wallet-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallet-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-primary);
+}
+
+/* --- HERO SECTION --- */
+.title-section {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.game-title {
+  font-family: 'Press Start 2P', cursive;
+  /* Only logo keeps retro vibe */
+  font-size: 36px;
+  color: var(--chiliz-red);
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+  text-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* --- STATS DASHBOARD --- */
+.prize-dashboard {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 32px 64px;
+  text-align: center;
+  margin-bottom: 48px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.prize-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.prize-amount {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+}
+
+/* --- MENU GRID --- */
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.menu-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 32px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.menu-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mode-ranked:hover {
+  border-color: var(--chiliz-red);
+  box-shadow: 0 8px 24px rgba(205, 1, 36, 0.15);
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-practice {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.btn-practice:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-ranked {
+  background: var(--chiliz-red);
+  color: white;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.btn-ranked:hover {
+  background: #ff0b3a;
+  /* Lighter red */
+  box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+/* --- CANVAS --- */
+canvas {
+  border-radius: 4px;
+  /* Slight roundness */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  /* Lift it off the page */
+  background-color: #000 !important;
+  /* STRICTLY BLACK BACKGROUND */
+  display: block;
+}
+
+/* --- GAME OVER --- */
+.game-over-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game-over-title {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.score-display {
+  font-size: 24px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
