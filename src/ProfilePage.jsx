@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ProfilePage = ({ user, onBack, onUpdateUsername }) => {
+const ProfilePage = ({ user, onBack, onUpdateUsername, onDisconnect }) => {
     const [newUsername, setNewUsername] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [displayLimit, setDisplayLimit] = useState(20);
@@ -43,14 +43,17 @@ const ProfilePage = ({ user, onBack, onUpdateUsername }) => {
                         </div>
                         <h2 className="text-xl md:text-2xl font-bold tracking-tight uppercase">Dashboard</h2>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
                         <div className="hidden sm:block text-right">
-                            <p className="text-[10px] font-bold text-gray-500 uppercase">Wallet Connected</p>
-                            <p className="text-xs font-mono font-bold">{user.address.slice(0, 6)}...{user.address.slice(-4)}</p>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase leading-none mb-1">Status: Active</p>
+                            <p className="text-xs font-mono font-bold leading-none">{user.address.slice(0, 6)}...{user.address.slice(-4)}</p>
                         </div>
-                        <div className="size-10 bg-primary border-2 border-secondary pixel-shadow flex items-center justify-center">
-                            <span className="material-symbols-outlined">person</span>
-                        </div>
+                        <button
+                            onClick={onDisconnect}
+                            className="bg-red-500 text-white border-2 border-secondary px-4 py-2 text-xs font-black uppercase tracking-wider pixel-shadow hover:bg-red-600 active:translate-y-1 transition-all"
+                        >
+                            Disconnect
+                        </button>
                     </div>
                 </div>
             </nav>

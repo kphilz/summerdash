@@ -243,6 +243,7 @@ function AppContent() {
           user={user}
           onBack={() => setCurrentView('LANDING')}
           onUpdateUsername={updateUsername}
+          onDisconnect={() => open({ view: 'Account' })}
         />
       );
     }

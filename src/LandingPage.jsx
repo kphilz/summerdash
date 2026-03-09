@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, onOpenAbout, onOpenProfile }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showShopComingSoon, setShowShopComingSoon] = useState(false);
 
     const handlePlayClick = () => {
         if (!wallet) {
@@ -284,6 +285,24 @@ const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, 
                                 <p className="text-gray-300 font-body text-base md:text-lg leading-relaxed">
                                     Transparent Fairness. Instant Rewards.
                                 </p>
+                                <div className="relative w-fit">
+                                    <button
+                                        onClick={() => {
+                                            setShowShopComingSoon(true);
+                                            setTimeout(() => setShowShopComingSoon(false), 2000);
+                                        }}
+                                        className="mt-2 bg-primary text-secondary px-8 py-3 text-sm font-black uppercase tracking-widest border-2 border-white pixel-shadow hover:scale-105 transition-all active:translate-y-1"
+                                    >
+                                        Visit Shop
+                                    </button>
+                                    {showShopComingSoon && (
+                                        <div className="absolute -top-10 left-0 animate-bounce">
+                                            <div className="bg-white text-red-600 text-[10px] font-black px-3 py-1 border-2 border-secondary pixel-shadow uppercase">
+                                                Coming Soon!
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </section>
