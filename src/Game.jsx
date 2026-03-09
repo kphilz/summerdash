@@ -514,7 +514,7 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
                                 if (lives <= 0) {
                                     audioManager.playGameOver();
                                     isGameOver = true;
-                                    onGameOver(score);
+                                    onGameOver({ score, coins: coinCount });
                                 }
                             }
                         }

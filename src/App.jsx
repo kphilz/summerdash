@@ -42,8 +42,11 @@ function AppContent() {
   const [gameState, setGameState] = useState('START'); // START, PLAYING, GAMEOVER
   const [currentView, setCurrentView] = useState('LANDING'); // LANDING, ABOUT, PROFILE
   const [score, setScore] = useState(0);
+  const [runCoins, setRunCoins] = useState(0);
+  const [runObstacles, setRunObstacles] = useState(0);
   const [status, setStatus] = useState('');
   const [prizePool, setPrizePool] = useState('0');
+  const [showSubmissionToast, setShowSubmissionToast] = useState(false);
 
   // User Statistics & Session State
   const [user, setUser] = useState(null);
@@ -165,17 +168,24 @@ function AppContent() {
   };
 
   const [lastLevelReached, setLastLevelReached] = useState(1);
-  const handleGameOver = (finalScore) => {
-    setScore(finalScore);
+  const handleGameOver = (scoreInfo) => {
+    // Receive { score (obstacles), coins } from Game.jsx
+    const totalPoints = (scoreInfo.score || 0) + (scoreInfo.coins || 0);
+
+    setScore(totalPoints);
+    setRunCoins(scoreInfo.coins || 0);
+    setRunObstacles(scoreInfo.score || 0);
+
     // Simple logic to detect level from score if Game doesn't send it yet
-    const estimatedLevel = Math.max(1, Math.floor(finalScore / 50) + 1);
+    const estimatedLevel = Math.max(1, Math.floor((scoreInfo.score || 0) / 50) + 1);
     setLastLevelReached(estimatedLevel);
     setGameState('GAMEOVER');
   };
 
   const submitScore = async () => {
-    alert(`Score ${score} submitted! (Mock)`);
     setStatus("Score Submitted!");
+    setShowSubmissionToast(true);
+    setTimeout(() => setShowSubmissionToast(false), 3000);
 
     // Save locally
     if (user && isConnected) {
@@ -245,7 +255,17 @@ function AppContent() {
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <div className="flex flex-col gap-4 md:gap-6 text-white items-center text-center p-6 md:p-8 border-4 border-white bg-black shadow-pixel max-w-lg w-full">
               <h1 className="text-4xl md:text-6xl font-black uppercase text-red-600 text-shadow-pixel">GAME OVER</h1>
-              <h2 className="text-2xl md:text-4xl font-bold">SCORE: {score}</h2>
+              <div className="flex flex-col gap-2 w-full max-w-xs">
+                <div className="flex justify-between w-full border-b border-white/20 pb-1">
+                  <span className="text-xs font-bold opacity-70 uppercase tracking-widest">OBSTACLES:</span>
+                  <span className="text-xl font-bold">{runObstacles}</span>
+                </div>
+                <div className="flex justify-between w-full border-b border-white/20 pb-1">
+                  <span className="text-xs font-bold opacity-70 uppercase tracking-widest text-primary">COINS:</span>
+                  <span className="text-xl font-bold text-primary">{runCoins}</span>
+                </div>
+                <h2 className="text-2xl md:text-5xl font-black mt-4 uppercase text-white">SCORE: {score}</h2>
+              </div>
               <div className="mt-4 md:mt-8 flex flex-wrap gap-3 md:gap-4 justify-center">
                 <button onClick={startGame} className="border-4 border-white bg-primary px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
                   Try Again
