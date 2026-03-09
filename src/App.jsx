@@ -5,6 +5,8 @@ import ErrorBoundary from './ErrorBoundary';
 import LandingPage from './LandingPage';
 import GameContainer from './GameContainer';
 import AboutPage from './AboutPage';
+import OrientationOverlay from './OrientationOverlay';
+
 
 // Contracts will be imported later after compilation and artifact generation
 // import GameRegistryArtifact from '../../contracts/artifacts/contracts/GameRegistry.sol/GameRegistry.json';
@@ -18,6 +20,7 @@ function App() {
     <ErrorBoundary>
       <AppContent />
     </ErrorBoundary>
+
   );
 }
 
@@ -71,9 +74,12 @@ function AppContent() {
     */
   };
 
+  const [gameKey, setGameKey] = useState(0);
+
   const startGame = () => {
     setScore(0);
     setGameState('PLAYING');
+    setGameKey(prev => prev + 1);
   };
 
   const payAndPlay = async () => {
@@ -155,34 +161,40 @@ function AppContent() {
 
   // Active Game (PLAYING or GAMEOVER overlay)
   return (
-    <div className="relative w-full h-screen bg-black">
-      <GameContainer
-        onGameOver={handleGameOver}
-        setScore={setScore}
-      />
+    <OrientationOverlay>
+      <div className="relative w-full h-screen bg-black">
+        <GameContainer
+          key={gameKey}
+          onGameOver={handleGameOver}
+          setScore={setScore}
+          onExit={() => setGameState('START')}
+        />
 
-      {gameState === 'GAMEOVER' && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="flex flex-col gap-6 text-white items-center text-center p-8 border-4 border-white bg-black shadow-pixel">
-            <h1 className="text-6xl font-black uppercase mb-4 text-red-600 text-shadow-pixel">GAME OVER</h1>
-            <h2 className="text-4xl font-bold">SCORE: {score}</h2>
-            <div className="mt-8 flex flex-wrap gap-4 justify-center">
-              <button onClick={startGame} className="border-4 border-white bg-primary px-8 py-4 text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform">
-                Try Again
-              </button>
-              <button onClick={submitScore} className="border-4 border-white bg-white px-8 py-4 text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform">
-                Submit Score
-              </button>
-              <button onClick={() => setGameState('START')} className="border-4 border-white bg-gray-800 px-8 py-4 text-xl font-black uppercase text-white shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform">
-                Back to Menu
-              </button>
+        {gameState === 'GAMEOVER' && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="flex flex-col gap-4 md:gap-6 text-white items-center text-center p-6 md:p-8 border-4 border-white bg-black shadow-pixel max-w-lg w-full">
+              <h1 className="text-4xl md:text-6xl font-black uppercase text-red-600 text-shadow-pixel">GAME OVER</h1>
+              <h2 className="text-2xl md:text-4xl font-bold">SCORE: {score}</h2>
+              <div className="mt-4 md:mt-8 flex flex-wrap gap-3 md:gap-4 justify-center">
+                <button onClick={startGame} className="border-4 border-white bg-primary px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
+                  Try Again
+                </button>
+                <button onClick={submitScore} className="border-4 border-white bg-white px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
+                  Submit Score
+                </button>
+                <button onClick={() => setGameState('START')} className="border-4 border-white bg-gray-800 px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-white shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
+                  Menu
+                </button>
+              </div>
+              {status && <div className="mt-4 text-xs md:text-sm font-bold text-yellow-500">{status}</div>}
             </div>
-            {status && <div className="mt-4 text-sm font-bold text-yellow-500">{status}</div>}
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+    </OrientationOverlay>
   );
 }
+
 
 export default App;

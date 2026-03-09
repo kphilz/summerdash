@@ -28,18 +28,9 @@ body {
   background: radial-gradient(circle at top, #1e1e24 0%, var(--dark-bg) 60%);
 }
 
-/* --- PLAYING MODE --- */
+/* Clean gameplay focus */
 .playing-mode {
   background: #000;
-  /* Absolute black for gameplay focus */
-}
-
-.playing-mode .header-bar,
-.playing-mode .title-section,
-.playing-mode .menu-grid,
-.playing-mode .prize-dashboard {
-  /* Hide UI elements clearly when playing if they are overlaying, 
-     but here we usually swap the view. If they persist, dim them. */
 }
 
 /* --- TOP HEADER --- */
@@ -211,6 +202,34 @@ canvas {
   background-color: #000 !important;
   /* STRICTLY BLACK BACKGROUND */
   display: block;
+}
+
+/* --- UTILITIES --- */
+.shadow-pixel {
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 1), 8px 8px 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.shadow-pixel-hover {
+  box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 1), 10px 10px 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.text-shadow-pixel {
+  text-shadow: 2px 2px 0px #000;
+}
+
+/* --- MOBILE SPECIFIC --- */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 20px;
+  }
+}
+
+/* Ensure no bounce on mobile scroll */
+html,
+body {
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* --- GAME OVER --- */

@@ -333,12 +333,15 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
             }
         };
 
-        window.addEventListener('keydown', (e) => {
+        const handleKeydown = (e) => {
             if (e.code === 'Space' || e.code === 'ArrowUp') jump();
-        });
+        };
+
+        window.addEventListener('keydown', handleKeydown);
         window.addEventListener('touchstart', jump);
 
         // --- MAIN LOOP ---
+
         const update = () => {
             if (isGameOver) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -346,19 +349,15 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
             // 1. BACKGROUND
             let bgIndex = (level - 1) % 30;
             let currentBg = getBgRef(bgIndex) || bgImg1.current;
-            switch (bgIndex) {
-                // Switch optional since we use getBgRef now, but keeping structure if needed for specific logic later
-                // Or we could simplify:
-                // default: currentBg = getBgRef(bgIndex) || bgImg1.current;
-            }
-            // Ensuring currentBg is valid
             // Ensuring currentBg is valid and actually loaded (naturalWidth > 0 checks for valid image data)
             if (!currentBg || !currentBg.complete || currentBg.naturalWidth === 0) currentBg = bgImg1.current;
 
+            // Draw background (scaled to canvas)
             ctx.drawImage(currentBg, bgX, 0, canvas.width, canvas.height);
             ctx.drawImage(currentBg, bgX + canvas.width, 0, canvas.width, canvas.height);
             if (isStarted) bgX -= gameSpeed * 0.2;
             if (bgX <= -canvas.width) bgX = 0;
+
 
             // 2. PHYSICS & PLAYER
             if (isStarted) {
@@ -500,6 +499,16 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
                                 audioManager.playHit();
                                 invincibilityTimer = 60;
                                 obs.passed = true;
+
+                                // NEW: Coin Penalty System
+                                if (obs.type === 'bat') {
+                                    coinCount = Math.max(0, coinCount - 100);
+                                } else if (obs.type === 'wasp') {
+                                    coinCount = Math.max(0, coinCount - 200);
+                                } else if (obs.type === 'ghost') {
+                                    coinCount = Math.floor(coinCount / 2);
+                                }
+
                                 for (let k = 0; k < 10; k++) particles.push(new Particle(player.x, player.y));
 
                                 if (lives <= 0) {
@@ -517,7 +526,7 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
                         onScoreUpdate(score);
                         if (score % 10 === 0) gameSpeed += 0.3;
 
-                        const levelThreshold = 2;
+                        const levelThreshold = 50; // User wants 50 obstacles per level
                         const calculatedLevel = Math.min(30, Math.floor(score / levelThreshold) + 1);
 
                         if (calculatedLevel > level) {
@@ -624,8 +633,9 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
                             player.y + player.height > c.y
                         ) {
                             c.active = false;
-                            coinCount++;
-                            // Simple audio for coin? Reusing collect for now or need new one?
+                            // Update: 10 coins normally, 15 during boost
+                            const points = boostTimer > 0 ? 15 : 10;
+                            coinCount += points;
                             audioManager.playCollect();
                         }
                     }
@@ -660,24 +670,25 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
                 ctx.textAlign = 'left';
                 ctx.strokeStyle = '#000';
 
-                // Score
-                ctx.lineWidth = 4;
-                ctx.strokeText(`Score: ${score}`, 20, 50);
-                ctx.fillText(`Score: ${score}`, 20, 50);
-
-                // Coin Count
-                ctx.drawImage(coinImg.current, 20, 130, 25, 25);
-                ctx.strokeText(`${coinCount}`, 50, 153);
-                ctx.fillText(`${coinCount}`, 50, 153);
-
                 // Level
                 ctx.font = '20px Arial';
-                ctx.strokeText(`LVL ${level}`, canvas.width - 100, 50);
-                ctx.fillText(`LVL ${level}`, canvas.width - 100, 50);
+                ctx.strokeText(`LVL ${level}`, 20, 30);
+                ctx.fillText(`LVL ${level}`, 20, 30);
+
+                // Score
+                ctx.lineWidth = 4;
+                ctx.font = 'bold 30px Arial';
+                ctx.strokeText(`Score: ${score}`, 20, 65);
+                ctx.fillText(`Score: ${score}`, 20, 65);
+
+                // Coin Count
+                ctx.drawImage(coinImg.current, 20, 135, 25, 25);
+                ctx.strokeText(`${coinCount}`, 50, 158);
+                ctx.fillText(`${coinCount}`, 50, 158);
 
                 // Lives
                 for (let i = 0; i < lives; i++) {
-                    ctx.drawImage(heartImg.current, 20 + (i * 40), 70, 30, 30);
+                    ctx.drawImage(heartImg.current, 20 + (i * 40), 75, 30, 30);
                 }
 
                 // Power-up Bars
@@ -708,22 +719,20 @@ const Game = ({ onGameOver, onScoreUpdate }) => {
 
         return () => {
             cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('keydown', jump);
+            window.removeEventListener('keydown', handleKeydown);
             window.removeEventListener('touchstart', jump);
             window.removeEventListener('resize', handleResize);
         };
     }, [imagesLoaded, isStarted]);
 
-    if (!imagesLoaded) return <div style={{ color: '#fff' }}>Loading Assets...</div>;
+    if (!imagesLoaded) return <div className="text-white">Loading Assets...</div>;
 
     return (
-        <div className="w-full h-screen overflow-hidden bg-black">
+        <div className="w-full h-screen overflow-hidden bg-black flex items-center justify-center">
             <canvas
                 ref={canvasRef}
                 className="block w-full h-full"
-                style={{
-                    imageRendering: 'pixelated',
-                }}
+                style={{ imageRendering: 'pixelated' }}
             />
         </div>
     );
