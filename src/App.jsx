@@ -273,10 +273,21 @@ function AppContent() {
                 <button onClick={submitScore} className="border-4 border-white bg-white px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
                   Submit Score
                 </button>
-                <button onClick={() => setGameState('START')} className="border-4 border-white bg-gray-800 px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-white shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
-                  Menu
+                <button onClick={() => setGameState('START')} className="border-4 border-white bg-gray-600 px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-white shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
+                  Home
                 </button>
               </div>
+
+              {/* Score Submission Toast */}
+              {showSubmissionToast && (
+                <div className="absolute top-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top duration-500 w-full px-4">
+                  <div className="bg-primary border-4 border-white px-8 py-4 shadow-pixel flex items-center gap-4 max-w-sm mx-auto">
+                    <span className="material-symbols-outlined text-black text-3xl font-black">verified</span>
+                    <p className="text-black font-black uppercase text-xl">Score {score} submitted!</p>
+                  </div>
+                </div>
+              )}
+
               {status && <div className="mt-4 text-xs md:text-sm font-bold text-yellow-500">{status}</div>}
             </div>
           </div>
