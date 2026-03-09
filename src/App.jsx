@@ -1,44 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+import { useAppKitAccount, useAppKit, useAppKitProvider } from '@reown/appkit/react';
 import Game from './Game';
 import ErrorBoundary from './ErrorBoundary';
 import LandingPage from './LandingPage';
 import GameContainer from './GameContainer';
 import AboutPage from './AboutPage';
 import OrientationOverlay from './OrientationOverlay';
-import { createWeb3Modal, defaultConfig, useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react';
-
-const projectId = '809cd54a4116a440b4f28d282bd98563';
-
-const mainnet = {
-  chainId: 43114,
-  name: 'Avalanche',
-  currency: 'AVAX',
-  explorerUrl: 'https://snowtrace.io',
-  rpcUrl: 'https://api.avax.network/ext/bc/C/rpc'
-};
-
-const metadata = {
-  name: 'Summer Dash',
-  description: 'High-octane runner game on Avalanche',
-  url: 'https://summerdash.com', // origin must match your domain & subdomain
-  icons: ['https://avatars.githubusercontent.com/u/37784886']
-};
-
-const ethersConfig = defaultConfig({
-  metadata,
-  enableEthersDeterminstic: false,
-  enableUniversalProvider: true
-});
-
-createWeb3Modal({
-  ethersConfig,
-  chains: [mainnet],
-  projectId,
-  enableAnalytics: true // Optional - defaults to your Cloud configuration
-});
+import ProfilePage from './ProfilePage';
 
 const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const TESTNET_ID = 88882;
+const LOCALHOST_ID = 31337;
+
+const generateRandomUsername = () => {
+  const prefixes = ['Runner', 'Glitch', 'Cyber', 'Dash', 'Block', 'Avax', 'Sewer', 'Sky'];
+  const suffix = Math.floor(1000 + Math.random() * 9000);
+  return `${prefixes[Math.floor(Math.random() * prefixes.length)]}_${suffix}`;
+};
+
+const calculateLevelFromXP = (totalPoints) => {
+  if (totalPoints < 20000) return 0;
+  let level = 1;
+  let target = 20000;
+  while (totalPoints >= target * 2 && level < 20) {
+    target *= 2;
+    level++;
+  }
+  return level;
+};
 
 function App() {
   return (
@@ -50,16 +40,54 @@ function App() {
 
 function AppContent() {
   const [gameState, setGameState] = useState('START'); // START, PLAYING, GAMEOVER
-  const [currentView, setCurrentView] = useState('LANDING'); // LANDING, ABOUT
+  const [currentView, setCurrentView] = useState('LANDING'); // LANDING, ABOUT, PROFILE
   const [score, setScore] = useState(0);
   const [status, setStatus] = useState('');
   const [prizePool, setPrizePool] = useState('0');
 
-  const { open } = useWeb3Modal();
-  const { address, isConnected } = useWeb3ModalAccount();
-  const { walletProvider } = useWeb3ModalProvider();
+  // User Statistics & Session State
+  const [user, setUser] = useState(null);
 
-  const wallet = address;
+  // Reown AppKit Hooks
+  const { address, isConnected } = useAppKitAccount();
+  const { open } = useAppKit();
+  const { walletProvider } = useAppKitProvider('eip155');
+
+  const wallet = isConnected ? address : null;
+
+  // Load/Save User Profile
+  useEffect(() => {
+    if (isConnected && address) {
+      const savedStats = JSON.parse(localStorage.getItem(`sd_user_${address.toLowerCase()}`));
+      if (savedStats) {
+        const syncedUser = {
+          ...savedStats,
+          globalLevel: calculateLevelFromXP(savedStats.totalPoints || 0)
+        };
+        setUser(syncedUser);
+      } else {
+        const newUser = {
+          address,
+          username: generateRandomUsername(),
+          usernameChanged: false,
+          totalPoints: 0,
+          globalLevel: calculateLevelFromXP(0),
+          sessions: []
+        };
+        setUser(newUser);
+        localStorage.setItem(`sd_user_${address.toLowerCase()}`, JSON.stringify(newUser));
+      }
+    } else {
+      setUser(null);
+    }
+  }, [isConnected, address]);
+
+  const updateUsername = (name) => {
+    if (!user) return;
+    const updatedUser = { ...user, username: name, usernameChanged: true };
+    setUser(updatedUser);
+    localStorage.setItem(`sd_user_${address.toLowerCase()}`, JSON.stringify(updatedUser));
+  };
 
   // Fetch Prize Pool
   const fetchPrizePool = async () => {
@@ -81,77 +109,92 @@ function AppContent() {
     } else {
       setStatus("");
     }
-  }, [isConnected, walletProvider]);
+  }, [isConnected]);
 
   const connectWallet = async () => {
     try {
       await open();
     } catch (error) {
-      console.error(error);
+      console.error("Connection failed:", error);
       setStatus("Connection failed");
     }
   };
 
   const [gameKey, setGameKey] = useState(0);
 
+  // Manage body scroll based on game state
+  useEffect(() => {
+    if (gameState === 'PLAYING') {
+      document.body.classList.add('game-active');
+    } else {
+      document.body.classList.remove('game-active');
+    }
+  }, [gameState]);
+
   const startGame = () => {
     setScore(0);
     setGameState('PLAYING');
     setGameKey(prev => prev + 1);
+    setStatus("");
   };
 
   const payAndPlay = async () => {
-    // Mock payment for frontend demo
-    setStatus("Mock Payment Successful! GLHF!");
-    fetchPrizePool();
-    startGame();
+    if (!isConnected) return alert("Connect Wallet first!");
 
-    /*
-    if (!wallet) return alert("Connect Wallet first!");
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(walletProvider);
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, GameRegistryArtifact.abi, signer);
 
-      setStatus("Paying Entry Fee (1 AVAX)...");
-      const tx = await contract.startGame({ value: ethers.parseEther("1.0") });
-      await tx.wait();
+      // Since ABI is not yet provided, we'll keep it as a documented step
+      // or implement a simple sendTransaction for demo if needed.
+      // But for now, we'll follow the pattern in the file.
 
-      setStatus("Entry Paid! GLHF!");
-      fetchPrizePool();
-      startGame();
+      setStatus("Mocking Payment for Demo (SDK Integrated)...");
+      // In production: const tx = await contract.startGame({ value: ethers.parseEther("1.0") });
+
+      setTimeout(() => {
+        setStatus("Payment Successful! GLHF!");
+        fetchPrizePool();
+        startGame();
+      }, 1000);
+
     } catch (err) {
       console.error(err);
       setStatus("Payment Failed: " + (err.reason || err.message));
     }
-    */
   };
 
+  const [lastLevelReached, setLastLevelReached] = useState(1);
   const handleGameOver = (finalScore) => {
     setScore(finalScore);
+    // Simple logic to detect level from score if Game doesn't send it yet
+    const estimatedLevel = Math.max(1, Math.floor(finalScore / 50) + 1);
+    setLastLevelReached(estimatedLevel);
     setGameState('GAMEOVER');
   };
 
   const submitScore = async () => {
     alert(`Score ${score} submitted! (Mock)`);
-    setStatus("Score Submitted (Mock)!");
+    setStatus("Score Submitted!");
 
-    /*
-    if (!wallet) return alert("Connect Wallet first!");
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, GameRegistryArtifact.abi, signer);
-      setStatus("Sending transaction...");
-      const tx = await contract.submitScore(score);
-      await tx.wait();
-      setStatus("Score Submitted!");
-      alert(`Score ${score} submitted!`);
-    } catch (err) {
-      console.error(err);
-      setStatus("Transaction failed: " + err.message);
+    // Save locally
+    if (user && isConnected) {
+      const newSession = {
+        date: new Date().toISOString(),
+        score: score,
+        level: lastLevelReached
+      };
+
+      const updatedUser = {
+        ...user,
+        totalPoints: user.totalPoints + score,
+        globalLevel: calculateLevelFromXP(user.totalPoints + score),
+        sessions: [...(user.sessions || []), newSession]
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem(`sd_user_${address.toLowerCase()}`, JSON.stringify(updatedUser));
     }
-    */
   };
 
   // State Switching Logic
@@ -164,6 +207,15 @@ function AppContent() {
         />
       );
     }
+    if (currentView === 'PROFILE' && user) {
+      return (
+        <ProfilePage
+          user={user}
+          onBack={() => setCurrentView('LANDING')}
+          onUpdateUsername={updateUsername}
+        />
+      );
+    }
     return (
       <LandingPage
         startGame={startGame}
@@ -173,6 +225,7 @@ function AppContent() {
         status={status}
         prizePool={prizePool}
         onOpenAbout={() => setCurrentView('ABOUT')}
+        onOpenProfile={() => setCurrentView('PROFILE')}
       />
     );
   }

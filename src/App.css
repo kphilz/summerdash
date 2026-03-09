@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
 
 :root {
   --chiliz-red: #CD0124;
@@ -224,12 +226,22 @@ canvas {
   }
 }
 
-/* Ensure no bounce on mobile scroll */
+/* Force native scrolling on landing/about pages */
 html,
 body {
-  overscroll-behavior-y: none;
-  overflow-x: hidden;
-  width: 100%;
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  /* Start with auto enabled */
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Only lock scroll when the game is actively running */
+body.game-active {
+  overflow: hidden !important;
+  height: 100% !important;
 }
 
 /* --- GAME OVER --- */

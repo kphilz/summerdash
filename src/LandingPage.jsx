@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unknown-property */
 import React, { useState } from 'react';
 
-const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, onOpenAbout }) => {
+const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, onOpenAbout, onOpenProfile }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handlePlayClick = () => {
@@ -29,6 +29,12 @@ const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, 
                         <button onClick={onOpenAbout} className="hover:text-primary transition-colors uppercase">About Game</button>
                         <a className="hover:text-primary transition-colors" href="#leaderboard">Leaderboard</a>
                         <a className="hover:text-primary transition-colors" href="#avalanche">Avalanche</a>
+                        {wallet && (
+                            <button onClick={onOpenProfile} className="text-primary bg-secondary px-3 py-1 flex items-center gap-1 pixel-shadow hover:scale-105 transition-transform">
+                                <span className="material-symbols-outlined text-sm">person</span>
+                                Profile
+                            </button>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -54,6 +60,9 @@ const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, 
                         <button onClick={() => { onOpenAbout(); setIsMenuOpen(false); }} className="text-left py-2 border-b border-gray-100 uppercase">About Game</button>
                         <a onClick={() => setIsMenuOpen(false)} className="py-2 border-b border-gray-100" href="#leaderboard">Leaderboard</a>
                         <a onClick={() => setIsMenuOpen(false)} className="py-2 border-b border-gray-100" href="#avalanche">Avalanche</a>
+                        {wallet && (
+                            <button onClick={() => { onOpenProfile(); setIsMenuOpen(false); }} className="text-left py-2 border-b border-gray-100 text-primary uppercase">Profile</button>
+                        )}
                         <button
                             onClick={() => { handlePlayClick(); setIsMenuOpen(false); }}
                             className="bg-primary text-secondary w-full py-4 font-bold uppercase tracking-wider text-base border-2 border-secondary pixel-shadow"
@@ -251,7 +260,7 @@ const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, 
                     {/* Avalanche Integration */}
                     <section className="px-6 py-16 md:py-20 bg-secondary text-white relative overflow-hidden" id="avalanche">
                         <div className="absolute top-10 right-10 size-64 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+                        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
                             <div className="order-2 lg:order-1 relative">
                                 <div className="relative z-10 bg-white text-secondary p-4 border-4 border-primary pixel-shadow transform rotate-2 max-w-xs mx-auto">
                                     <div className="aspect-square bg-gray-100 mb-4 border-2 border-gray-200 flex items-center justify-center">
@@ -314,7 +323,7 @@ const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, 
 
                     {/* CTA Footer */}
                     <section className="px-6 py-16 md:py-20 bg-accent-gray border-t-4 border-secondary">
-                        <div className="flex flex-col items-center text-center gap-8">
+                        <div className="max-w-7xl mx-auto flex flex-col items-center text-center gap-8">
                             <h2 className="text-3xl md:text-5xl font-black uppercase max-w-2xl leading-tight font-black uppercase tracking-tight mb-2">
                                 Enter the simulation.
                             </h2>
@@ -339,7 +348,7 @@ const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, 
 
                     {/* Footer */}
                     <footer className="bg-secondary text-white py-12 px-6">
-                        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
                             <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">videogame_asset</span>
                                 <span className="font-bold uppercase tracking-widest text-sm font-black uppercase tracking-tight mb-2">Summer Dash</span>
@@ -355,6 +364,9 @@ const LandingPage = ({ startGame, payAndPlay, wallet, connectWallet, prizePool, 
                         </div>
                     </footer>
                 </div>
+
+                {/* Balance Spacer (Desktop Only) - Ensures content center matches viewport center */}
+                <div className="hidden md:flex w-24 shrink-0 pointer-events-none"></div>
             </div>
         </div>
     );
