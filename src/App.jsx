@@ -47,6 +47,7 @@ function AppContent() {
   const [status, setStatus] = useState('');
   const [prizePool, setPrizePool] = useState('0');
   const [showSubmissionToast, setShowSubmissionToast] = useState(false);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
   // User Statistics & Session State
   const [user, setUser] = useState(null);
@@ -136,6 +137,7 @@ function AppContent() {
 
   const startGame = () => {
     setScore(0);
+    setScoreSubmitted(false);
     setGameState('PLAYING');
     setGameKey(prev => prev + 1);
     setStatus("");
@@ -183,27 +185,45 @@ function AppContent() {
   };
 
   const submitScore = async () => {
-    setStatus("Score Submitted!");
-    setShowSubmissionToast(true);
-    setTimeout(() => setShowSubmissionToast(false), 3000);
+    if (!isConnected) {
+      connectWallet();
+      return;
+    }
 
-    // Save locally
-    if (user && isConnected) {
-      const newSession = {
-        date: new Date().toISOString(),
-        score: score,
-        level: lastLevelReached
-      };
+    try {
+      setStatus("Awaiting Signature...");
+      const provider = new ethers.BrowserProvider(walletProvider);
+      const signer = await provider.getSigner();
 
-      const updatedUser = {
-        ...user,
-        totalPoints: user.totalPoints + score,
-        globalLevel: calculateLevelFromXP(user.totalPoints + score),
-        sessions: [...(user.sessions || []), newSession]
-      };
+      // Show proof of score for MVP video
+      const message = `Summer Dash: Submit High Score\nScore: ${score}\nDate: ${new Date().toLocaleDateString()}`;
+      await signer.signMessage(message);
 
-      setUser(updatedUser);
-      localStorage.setItem(`sd_user_${address.toLowerCase()}`, JSON.stringify(updatedUser));
+      setStatus("Score Verified!");
+      setShowSubmissionToast(true);
+      setScoreSubmitted(true);
+      setTimeout(() => setShowSubmissionToast(false), 3000);
+
+      if (user) {
+        const newSession = {
+          date: new Date().toISOString(),
+          score: score,
+          level: lastLevelReached
+        };
+
+        const updatedUser = {
+          ...user,
+          totalPoints: user.totalPoints + score,
+          globalLevel: calculateLevelFromXP(user.totalPoints + score),
+          sessions: [...(user.sessions || []), newSession]
+        };
+
+        setUser(updatedUser);
+        localStorage.setItem(`sd_user_${address.toLowerCase()}`, JSON.stringify(updatedUser));
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("Submission Cancelled");
     }
   };
 
@@ -270,9 +290,11 @@ function AppContent() {
                 <button onClick={startGame} className="border-4 border-white bg-primary px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
                   Try Again
                 </button>
-                <button onClick={submitScore} className="border-4 border-white bg-white px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
-                  Submit Score
-                </button>
+                {!scoreSubmitted && (
+                  <button onClick={submitScore} className="border-4 border-white bg-white px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-black shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
+                    {isConnected ? "Submit Score" : "Connect Wallet"}
+                  </button>
+                )}
                 <button onClick={() => setGameState('START')} className="border-4 border-white bg-gray-600 px-4 md:px-8 py-2 md:py-4 text-base md:text-xl font-black uppercase text-white shadow-pixel hover:shadow-pixel-hover hover:-translate-y-1 transition-transform active:translate-y-1">
                   Home
                 </button>
