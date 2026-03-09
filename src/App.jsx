@@ -1,26 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import Game from './Game';
 import { ethers } from 'ethers';
+import Game from './Game';
 import ErrorBoundary from './ErrorBoundary';
 import LandingPage from './LandingPage';
 import GameContainer from './GameContainer';
 import AboutPage from './AboutPage';
 import OrientationOverlay from './OrientationOverlay';
+import { createWeb3Modal, defaultConfig, useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react';
 
+const projectId = '809cd54a4116a440b4f28d282bd98563';
 
-// Contracts will be imported later after compilation and artifact generation
-// import GameRegistryArtifact from '../../contracts/artifacts/contracts/GameRegistry.sol/GameRegistry.json';
+const mainnet = {
+  chainId: 43114,
+  name: 'Avalanche',
+  currency: 'AVAX',
+  explorerUrl: 'https://snowtrace.io',
+  rpcUrl: 'https://api.avax.network/ext/bc/C/rpc'
+};
+
+const metadata = {
+  name: 'Summer Dash',
+  description: 'High-octane runner game on Avalanche',
+  url: 'https://summerdash.com', // origin must match your domain & subdomain
+  icons: ['https://avatars.githubusercontent.com/u/37784886']
+};
+
+const ethersConfig = defaultConfig({
+  metadata,
+  enableEthersDeterminstic: false,
+  enableUniversalProvider: true
+});
+
+createWeb3Modal({
+  ethersConfig,
+  chains: [mainnet],
+  projectId,
+  enableAnalytics: true // Optional - defaults to your Cloud configuration
+});
 
 const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
-const TESTNET_ID = 88882;
-const LOCALHOST_ID = 31337;
 
 function App() {
   return (
     <ErrorBoundary>
       <AppContent />
     </ErrorBoundary>
-
   );
 }
 
@@ -28,50 +52,44 @@ function AppContent() {
   const [gameState, setGameState] = useState('START'); // START, PLAYING, GAMEOVER
   const [currentView, setCurrentView] = useState('LANDING'); // LANDING, ABOUT
   const [score, setScore] = useState(0);
-  const [wallet, setWallet] = useState(null);
   const [status, setStatus] = useState('');
   const [prizePool, setPrizePool] = useState('0');
 
+  const { open } = useWeb3Modal();
+  const { address, isConnected } = useWeb3ModalAccount();
+  const { walletProvider } = useWeb3ModalProvider();
+
+  const wallet = address;
+
   // Fetch Prize Pool
   const fetchPrizePool = async () => {
-    // Mock prize pool for frontend demo
     setPrizePool('1000');
-    /*
-    if (!window.ethereum) return;
+    if (!walletProvider) return;
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(walletProvider);
       const balance = await provider.getBalance(CONTRACT_ADDRESS);
       setPrizePool(ethers.formatEther(balance));
     } catch (err) {
       console.error("Error fetching prize pool:", err);
     }
-    */
   };
 
   useEffect(() => {
-    if (wallet) fetchPrizePool();
-  }, [wallet]);
+    if (isConnected) {
+      fetchPrizePool();
+      setStatus("Wallet Connected");
+    } else {
+      setStatus("");
+    }
+  }, [isConnected, walletProvider]);
 
   const connectWallet = async () => {
-    // Mock wallet connection
-    setWallet("0x123...mock");
-    setStatus("Wallet Connected (Mock)");
-
-    /*
-    if (window.ethereum) {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        setWallet(accounts[0]);
-        setStatus("Wallet Connected");
-      } catch (error) {
-        console.error(error);
-        setStatus("Connection failed");
-      }
-    } else {
-      setStatus("Please install Metamask");
+    try {
+      await open();
+    } catch (error) {
+      console.error(error);
+      setStatus("Connection failed");
     }
-    */
   };
 
   const [gameKey, setGameKey] = useState(0);
